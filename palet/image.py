@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from palet.pallet import Pallet, ConversionPallet
+from palet.palette import Palette, ConversionPalette
 from palet.color import Color
 
 from PIL import Image, ImageDraw, ImageFile
@@ -8,37 +8,37 @@ from PIL import Image, ImageDraw, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def extract_pallet(f: str) -> Pallet:
+def extract_palette(f: str) -> Palette:
     image = Image.open(f)
     image = image.convert("RGBA")
 
     color_list = image.getcolors()
     if color_list is None:
         raise ValueError(
-            f'Extracted Pallet is NoneType. Use alternative `{extract_pallet_ext.__name__}` to extract all instead.'
+            f'Extracted Palette is NoneType. Use alternative `{extract_palette_ext.__name__}` to extract all instead.'
         )
 
-    new_pallet = Pallet(*(x[-1] for x in color_list))
-    return new_pallet
+    new_palette = Palette(*(x[-1] for x in color_list))
+    return new_palette
 
 
-def extract_pallet_ext(f: str, alpha_threshold=0) -> Pallet:
+def extract_palette_ext(f: str, alpha_threshold=0) -> Palette:
     image = Image.open(f)
     image = image.convert("RGBA")
 
-    new_pallet = Pallet()
+    new_palette = Palette()
     for pix in image.getdata():
         if pix[-1] > alpha_threshold:
-            new_pallet.add(pix)
+            new_palette.add(pix)
 
-    return new_pallet
+    return new_palette
 
 
-def export_pallet(pallet, f, size=(8, 8)) -> None:
-    f_image = Image.new("RGBA", (size[0] * len(pallet), size[1]), 0)
+def export_palette(palette, f, size=(8, 8)) -> None:
+    f_image = Image.new("RGBA", (size[0] * len(palette), size[1]), 0)
     draw = ImageDraw.Draw(f_image)
 
-    for i, color in enumerate(pallet):
+    for i, color in enumerate(palette):
         if isinstance(color, Color):
             draw.rectangle(((i * size[0], 0), ((i + 1) * size[0], size[1])), color.irgba)
         else:
@@ -48,11 +48,11 @@ def export_pallet(pallet, f, size=(8, 8)) -> None:
     return
 
 
-def convert_pallet(f_in, cmap: ConversionPallet | dict = None, f_out="") -> None:
+def convert_palette(f_in, cmap: ConversionPalette | dict = None, f_out="") -> None:
     if cmap is None:
         return
 
-    if isinstance(cmap, ConversionPallet):
+    if isinstance(cmap, ConversionPalette):
         cmap = cmap.to_dict()
 
     f_image = Image.open(f_in)
@@ -74,14 +74,14 @@ def convert_pallet(f_in, cmap: ConversionPallet | dict = None, f_out="") -> None
     return
 
 
-def extract_convert_pallet(f_a: str, f_b: str, f_out="", method="min_distance") -> None:
-    pa = extract_pallet_ext(f_a)
-    pb = extract_pallet_ext(f_b)
+def extract_convert_palette(f_a: str, f_b: str, f_out="", method="min_distance") -> None:
+    pa = extract_palette_ext(f_a)
+    pb = extract_palette_ext(f_b)
 
     if method == "min_distance":
-        cmap = ConversionPallet.map(pa, pb)
+        cmap = ConversionPalette.map(pa, pb)
     else:
-        raise NotImplemented(f"Unable to run {extract_convert_pallet.__name__} with method `{method}`.")
+        raise NotImplemented(f"Unable to run {extract_convert_palette.__name__} with method `{method}`.")
 
-    convert_pallet(f_a, cmap, f_out=f_out)
+    convert_palette(f_a, cmap, f_out=f_out)
     return
