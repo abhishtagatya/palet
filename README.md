@@ -1,7 +1,5 @@
 # Paleta [![PyPI version](https://badge.fury.io/py/paleta.svg)](https://badge.fury.io/py/paleta)
 
------
-
 <img src="https://raw.githubusercontent.com/abhishtagatya/paleta/master/docs/preview.png" alt="Paleta Preview Game Sprite" width="256" style="display: block; margin: auto">
 
 Paleta is a Color Pallet Extraction and Management Tool that is focused on enhancing Visual Game Assets. It supports pallet conversion, mixing, minimizing, and matching in any way possible.
