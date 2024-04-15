@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from palet.color import Color
+import random
+from typing import List, Dict
+
+from palet.color import Color, color_average
 from palet.metric import euclidean_distance
 
 
@@ -48,6 +51,8 @@ class Pallet:
             self.colors.add(Color(*color))
             return
 
+        raise ValueError(f"Unable to add color to Pallet of type `{type(color)}`")
+
     def remove(self, color: Color | tuple):
         """
         Remove Color from Pallet Set
@@ -63,6 +68,8 @@ class Pallet:
             cn = Color(*color)
             self.colors.remove(cn)
             return
+
+        raise ValueError(f"Unable to remove color to Pallet by type `{type(color)}`")
 
     def clear(self):
         """
@@ -85,11 +92,15 @@ class Pallet:
         if isinstance(other, set):
             return self.colors == other
 
+        # TODO: Implement New Instances : (Tuple, List) as List of RGB/A
+
         return False
 
     def __or__(self, other):
         if isinstance(other, Pallet):
             return Pallet(*self.colors | other.colors)
+
+        # TODO: Implement New Instances : (Colors, Tuple, List, None) as RGB/A
 
         raise TypeError(f'Unsupported operation with class "{type(other)}". Must be instance of {self.__class__}')
 
@@ -98,7 +109,9 @@ class Pallet:
 
     def __and__(self, other):
         if isinstance(other, Pallet):
-            return Pallet(*self.colors & other.colors)
+            return Pallet(*(self.colors & other.colors))
+
+        # TODO: Implement New Instances : (Tuple, List, None) as List of Colors or RGB/A
 
         raise TypeError(f'Unsupported operation with class "{type(other)}". Must be instance of {self.__class__}')
 
@@ -106,9 +119,14 @@ class Pallet:
         if isinstance(other, Pallet):
             return Pallet(*self.colors.difference(other.colors))
 
+        # TODO: Implement New Instances : (Tuple, List, None) as List of Colors or RGB/A
+
         raise TypeError(f'Unsupported operation with class "{type(other)}". Must be instance of {self.__class__}')
 
     def __contains__(self, item):
+        if isinstance(item, tuple) or isinstance(item, list):
+            return item in self.color_set
+
         return item in self.colors
 
     def union(self, other: Pallet):
@@ -138,7 +156,7 @@ class Pallet:
         """
         return self.__and__(other)
 
-    def to_list(self):
+    def to_list(self) -> List[Color]:
         """
         Returns a List Object of Set
 
@@ -146,7 +164,7 @@ class Pallet:
         """
         return list(self.colors)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, tuple]:
         """
         Returns a Dict Object of Set {Hex : (R, G, B, A)}
 
@@ -176,6 +194,20 @@ class ConversionPallet:
 
         return cls(cmap=cmap)
 
+    @classmethod
+    def random(cls, pa: Pallet, pb: Pallet, seed=None):
+        cmap = {}
+
+        if seed:
+            random.seed(seed)
+
+        pal = pa.to_list()
+        pbl = pb.to_list()
+        for ca in pal:
+            cmap[ca] = random.choice(pbl)
+
+        return cls(cmap=cmap)
+
     def __getitem__(self, item):
         return self.cmap[item]
 
@@ -186,3 +218,53 @@ class ConversionPallet:
         return {
             k.rgba: v.rgba for k, v in self.cmap.items()
         }
+
+
+def maximize_by_average(pallet: Pallet | list) -> Pallet:
+    """
+    Maximize Pallet by Average between Colors (in Pallet List Order)
+
+    :param pallet: Pallet or List of Colors
+    :return: Pallet
+    """
+
+    p_list = pallet
+    if isinstance(pallet, Pallet):
+        p_list = pallet.to_list()
+
+    np_list = []
+
+    for idx in range(len(p_list)):
+        if idx == 0:
+            np_list.append(p_list[idx])
+            continue
+
+        ca = color_average(np_list[-1], p_list[idx])
+        np_list.append(ca)
+        np_list.append(p_list[idx])
+
+    return Pallet(*np_list)
+
+
+def minimize_by_average(pallet: Pallet | list) -> Pallet:
+    """
+    Maximize Pallet by Average between Colors (in Pallet List Order)
+
+    :param pallet: Pallet or List of Colors
+    :return: Pallet
+    """
+
+    p_list = pallet
+    if isinstance(pallet, Pallet):
+        p_list = pallet.to_list()
+
+    np_list = []
+
+    for idx in range(len(p_list)):
+        if idx == 0:
+            continue
+
+        ca = color_average(p_list[-1], p_list[idx])
+        np_list.append(ca)
+
+    return Pallet(*np_list)
