@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from palet.palette import Palette, ConversionPalette
-from palet.color import Color
+from paleta.palette import Palette, ConversionPalette
+from paleta.color import Color
 
 from PIL import Image, ImageDraw, ImageFile
 

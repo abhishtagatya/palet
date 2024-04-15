@@ -1,6 +1,6 @@
 import pytest
 
-from palet.color import Color, color_average
+from paleta.color import Color, color_average
 
 
 @pytest.fixture

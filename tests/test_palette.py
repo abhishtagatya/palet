@@ -1,7 +1,7 @@
 import pytest
 
-from palet.color import Color, color_average
-from palet.palette import Palette, ConversionPalette, maximize_by_average, minimize_by_average
+from paleta.color import Color, color_average
+from paleta.palette import Palette, ConversionPalette, maximize_by_average, minimize_by_average
 
 
 @pytest.fixture

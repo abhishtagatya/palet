@@ -3,8 +3,8 @@ from __future__ import annotations
 import random
 from typing import List, Dict
 
-from palet.color import Color, color_average
-from palet.metric import euclidean_distance
+from paleta.color import Color, color_average
+from paleta.metric import euclidean_distance
 
 
 class Palette:
