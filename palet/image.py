@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from palet.pallet import Pallet, ConversionPallet
+from palet.color import Color
 
 from PIL import Image, ImageDraw, ImageFile
 
@@ -38,7 +39,10 @@ def export_pallet(pallet, f, size=(8, 8)) -> None:
     draw = ImageDraw.Draw(f_image)
 
     for i, color in enumerate(pallet):
-        draw.rectangle(((i * size[0], 0), ((i + 1) * size[0], size[1])), color)
+        if isinstance(color, Color):
+            draw.rectangle(((i * size[0], 0), ((i + 1) * size[0], size[1])), color.irgba)
+        else:
+            draw.rectangle(((i * size[0], 0), ((i + 1) * size[0], size[1])), color)
 
     f_image.save(f)
     return
@@ -67,4 +71,17 @@ def convert_pallet(f_in, cmap: ConversionPallet | dict = None, f_out="") -> None
 
     f_out = f_out if f_out != "" else f_in
     new_image.save(f_out)
+    return
+
+
+def extract_convert_pallet(f_a: str, f_b: str, f_out="", method="min_distance") -> None:
+    pa = extract_pallet_ext(f_a)
+    pb = extract_pallet_ext(f_b)
+
+    if method == "min_distance":
+        cmap = ConversionPallet.map(pa, pb)
+    else:
+        raise NotImplemented(f"Unable to run {extract_convert_pallet.__name__} with method `{method}`.")
+
+    convert_pallet(f_a, cmap, f_out=f_out)
     return
