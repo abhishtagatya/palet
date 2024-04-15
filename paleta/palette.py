@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 from typing import List, Dict
 
+from paleta.api import LospecAPI
 from paleta.color import Color, color_average
 from paleta.metric import euclidean_distance
 
@@ -129,6 +130,19 @@ class Palette:
 
         return item in self.colors
 
+    @classmethod
+    def from_lospec(cls, name: str):
+        resp = LospecAPI.get_palette(name)
+
+        if LospecAPI.is_error_message(resp):
+            raise ValueError(f"Unable to retrieve palette with the name `{name}` from Lospec.com.")
+
+        color_list = []
+        for col_str in resp.get("colors", []):
+            color_list.append(Color.from_hex(col_str))
+
+        return cls(*color_list)
+
     def union(self, other: Palette):
         """
         Union with Other Palette Set
@@ -175,11 +189,11 @@ class Palette:
 
 class ConversionPalette:
 
-    def __init__(self, cmap: dict[tuple, tuple] = None):
+    def __init__(self, cmap: dict[Color | tuple, Color | tuple] = None):
         self.cmap = cmap
 
     @classmethod
-    def map(cls, pa: Palette, pb: Palette, algo=euclidean_distance, sim=min):
+    def map(cls, pa: Palette, pb: Palette, algo=euclidean_distance, metric=min):
         cmap = {}
 
         pal = pa.to_list()
@@ -188,7 +202,7 @@ class ConversionPalette:
             dist = []
             for cb in pbl:
                 dist.append(algo(ca.rgba, cb.rgba))
-            min_dist = sim(dist)
+            min_dist = metric(dist)
             min_pos = dist.index(min_dist)
             cmap[ca] = pbl[min_pos]
 
