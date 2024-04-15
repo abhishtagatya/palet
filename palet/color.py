@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 
 
@@ -12,10 +14,10 @@ class Color:
     """
 
     def __init__(self, r, g, b, alpha=255.0):
-        self._r = min(r, 255.0)
-        self._g = min(g, 255.0)
-        self._b = min(b, 255.0)
-        self._alpha = min(alpha, 255.0)
+        self._r = max(min(r, 255.0), 0)
+        self._g = max(min(g, 255.0), 0)
+        self._b = max(min(b, 255.0), 0)
+        self._alpha = max(min(alpha, 255.0), 0)
 
     @property
     def r(self):
@@ -28,7 +30,7 @@ class Color:
 
     @r.setter
     def r(self, value):
-        self._r = min(value, 255.0)
+        self._r = max(min(value, 255.0), 0)
 
     @property
     def g(self):
@@ -41,7 +43,7 @@ class Color:
 
     @g.setter
     def g(self, value):
-        self._g = min(value, 255.0)
+        self._g = max(min(value, 255.0), 0)
 
     @property
     def b(self):
@@ -54,7 +56,7 @@ class Color:
 
     @b.setter
     def b(self, value):
-        self._b = min(value, 255.0)
+        self._b = max(min(value, 255.0), 0)
 
     @property
     def alpha(self):
@@ -67,7 +69,7 @@ class Color:
 
     @alpha.setter
     def alpha(self, value):
-        self._alpha = min(value, 255.0)
+        self._alpha = max(min(value, 255.0), 0)
 
     @property
     def rgb(self):
@@ -86,6 +88,24 @@ class Color:
         :return: tuple(float, float, float, float)
         """
         return self.r, self.g, self.b, self.alpha
+
+    @property
+    def irgb(self):
+        """
+        RGB Tuple (Red, Green, Blue)
+
+        :return: tuple(int, int, int)
+        """
+        return int(self.r), int(self.g), int(self.b)
+
+    @property
+    def irgba(self):
+        """
+        RGBA Tuple (Red, Green, Blue, Alpha)
+
+        :return: tuple(int, int, int, int)
+        """
+        return int(self.r), int(self.g), int(self.b), int(self.alpha)
 
     @property
     def bgr(self):
@@ -112,7 +132,7 @@ class Color:
 
         :return: str
         """
-        return '#{:02x}{:02x}{:02x}'.format(self.r, self.g, self.b)
+        return '#{:02x}{:02x}{:02x}'.format(int(self.r), int(self.g), int(self.b))
 
     def __str__(self):
         return str(self.rgba)
@@ -149,7 +169,7 @@ class Color:
             return self.rgba == other.rgba
 
         if isinstance(other, tuple) or isinstance(other, list):
-            return sum(self.rgba) < sum(Color(*other).rgba)
+            return self.rgba == Color(*other).rgba
 
         raise TypeError(f'Unsupported operation with class "{type(other)}"')
 
@@ -194,16 +214,16 @@ class Color:
         raise TypeError(f'Unsupported operation with class "{type(other)}"')
 
     def __hash__(self):
-        return hash((self.rgb, self.hex))
+        return hash((self.rgba, self.hex))
 
     def get_normalize(self, normalizer=255):
         """
         Get Normalized Value by Normalizer Factors
 
-        :param normalizer: RGB Normalizer               (float)
+        :param normalizer: RGB Normalizer (float)
         :return: tuple(float, float, float, float)
         """
-        return self.r / normalizer, self.g / normalizer, self.b / normalizer, self.alpha / 255
+        return self.r / normalizer, self.g / normalizer, self.b / normalizer, self.alpha / normalizer
 
     def get_inverse(self, with_alpha=False):
         """
@@ -228,9 +248,9 @@ class Color:
 
         # Convert hex to RGB
         if len(code) == 3:
-            r = int(code[0]*2, 16)
-            g = int(code[1]*2, 16)
-            b = int(code[2]*2, 16)
+            r = int(code[0] * 2, 16)
+            g = int(code[1] * 2, 16)
+            b = int(code[2] * 2, 16)
         else:
             r = int(code[0:2], 16)
             g = int(code[2:4], 16)
@@ -421,10 +441,27 @@ class Color:
         """
         return copy.copy(self)
 
-    def copy_inverse(self):
+    def copy_inverse(self, with_alpha=False):
         """
         Copy Inverse of Vector Object
 
         :return: cls
         """
-        return Color(*self.get_inverse())
+        return Color(*self.get_inverse(with_alpha=with_alpha))
+
+
+def color_average(*colors: Color, with_alpha=False) -> Color:
+    if with_alpha:
+        Color(*(
+            sum(color.r for color in colors) / len(colors),
+            sum(color.g for color in colors) / len(colors),
+            sum(color.b for color in colors) / len(colors),
+            sum(color.alpha for color in colors) / len(colors))
+        )
+
+    return Color(*(
+        sum(color.r for color in colors) / len(colors),
+        sum(color.g for color in colors) / len(colors),
+        sum(color.b for color in colors) / len(colors)
+    ))
+
