@@ -88,7 +88,7 @@ def some_metric_function() -> object:
     return max()
 
 
-cmap2 = ConversionPalette.map(warm_ochre, the_after, algo=some_metric_function, metric=some_metric_function)
+cmap2 = ConversionPalette.map(warm_ochre, the_after, algo=some_distance_function, metric=some_metric_function)
 print(cmap2.to_dict())
 
 # Randomize the Mapping
